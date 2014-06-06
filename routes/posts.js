@@ -5,7 +5,7 @@ var mongoose = require('mongoose');
 /* GET posts listing. */
 router.get('/', function(req, res) {
   mongoose.model('posts').find(function(err, posts) {
-  	console.log(posts);
+  	posts.reverse();
     res.render('posts', {posts: posts});
   });
 });

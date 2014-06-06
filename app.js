@@ -69,12 +69,12 @@ app.use(function(err, req, res, next) {
 /**
  * Set scheduler to crawl
  */
-var Crawler = require('crawler');
+var Crawler = require('./crawler');
 var crawler = new Crawler();
 
 var CronJob = require('cron').CronJob;
 
-var emailSender = require('emailSender');
+var emailSender = require('./emailSender');
 
 // Register job to run
 function job() {
@@ -86,23 +86,25 @@ function job() {
     // Send an email alert and store the new item into database
     var newPosts = [];
     var Post = mongoose.model('posts');
-
-    Post.find(function(err, posts) {
-      posts.forEach(function(post) {
-        data.forEach(function(d) {
-          if (d.title !== post.title) {
-            posts.push(d);
+    
+    data.forEach(function(d) {
+      Post.find({title: d.title}, function(err, p) {
+        if (err) {
+          console.log(err);
+        }else {
+          if (!p) {
+            newPosts.push(d);
           }
-        });
+        }
       });
+    });
 
-      newPosts.forEach(function(post) {
-        var item = new Post(post);
-        item.save(function(err) {
-          if (err) {
-            console.log(err);
-          }
-        });
+    newPosts.forEach(function(post) {
+      var item = new Post(post);
+      item.save(function(err) {
+        if (err) {
+          console.log(err);
+        }
       });
     });
 
@@ -112,7 +114,13 @@ function job() {
   });
 }
 
+function testingJob() {
+  console.log('doing the job');
+}
+
 // job run every 5mins
-new CronJob('* */5 * * * *', job, null, true, "America/Los_Angeles");
+//new CronJob('* */5 * * * *', job, null, true, "America/Los_Angeles");
+
+//job.call();
 
 module.exports = app;

@@ -57,7 +57,9 @@ Crawler.prototype.fetch = function(url, callback) {
     if (data) {
       var $ = self.cheerio.load(data),
           parsedData = parseData($);
-      
+
+      parsedData.reverse();
+
       if (callback) {
         callback(parsedData);
       }
