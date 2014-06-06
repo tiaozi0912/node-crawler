@@ -11,7 +11,7 @@ var posts = require('./routes/posts');
 var mongoose = require('mongoose');
 var fs = require('fs');
 
-var app = express();
+var app = express(); 
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -65,5 +65,54 @@ app.use(function(err, req, res, next) {
     });
 });
 
+
+/**
+ * Set scheduler to crawl
+ */
+var Crawler = require('crawler');
+var crawler = new Crawler();
+
+var CronJob = require('cron').CronJob;
+
+var emailSender = require('emailSender');
+
+// Register job to run
+function job() {
+  var url = "http://sfbay.craigslist.org/search/apa?query=palo+alto&sale_date=-&maxAsk=1800";
+
+  crawler.fetch(url, function(data) {
+    // Compare the fetched data with the data stored in database
+    // If there is something new
+    // Send an email alert and store the new item into database
+    var newPosts = [];
+    var Post = mongoose.model('posts');
+
+    Post.find(function(err, posts) {
+      posts.forEach(function(post) {
+        data.forEach(function(d) {
+          if (d.title !== post.title) {
+            posts.push(d);
+          }
+        });
+      });
+
+      newPosts.forEach(function(post) {
+        var item = new Post(post);
+        item.save(function(err) {
+          if (err) {
+            console.log(err);
+          }
+        });
+      });
+    });
+
+    if (newPosts.length > 0) {
+      emailSender.send(newPosts);
+    }
+  });
+}
+
+// job run every 5mins
+new CronJob('* */5 * * * *', job, null, true, "America/Los_Angeles");
 
 module.exports = app;
