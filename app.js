@@ -71,9 +71,6 @@ app.use(function(err, req, res, next) {
  */
 var Crawler = require('./crawler');
 var crawler = new Crawler();
-
-var CronJob = require('cron').CronJob;
-
 var emailSender = require('./emailSender');
 
 var async = require('async');
@@ -128,13 +125,7 @@ function handleNewPosts(newPosts, Post) {
   }
 }
 
-function testingJob() {
-  console.log('doing the job');
-}
-
 // job run every 5mins
-//new CronJob('* */5 * * * *', job, null, true, "America/Los_Angeles");
-
-job.call();
+setInterval(job, 1000 * 60 * 5);
 
 module.exports = app;
