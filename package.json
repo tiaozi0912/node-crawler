@@ -6,9 +6,9 @@
     "url": "git@github.com:tiaozi0912/node-crawler.git"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./bin/www"
   },
-  "main": "app.js",
   "dependencies": {
     "express": "~4.2.0",
     "static-favicon": "~1.0.0",
