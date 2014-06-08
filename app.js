@@ -44,15 +44,18 @@ app.use(function(req, res, next) {
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
-    app.use(function(err, req, res, next) {
-        res.status(err.status || 500);
-        res.render('error', {
-            message: err.message,
-            error: err
-        });
-    });
+  app.use(function(err, req, res, next) {
+      res.status(err.status || 500);
+      res.render('error', {
+          message: err.message,
+          error: err
+      });
+  });
 
-    mongoose.connect('mongodb://localhost/crawler');
+  mongoose.connect('mongodb://localhost/crawler');
+} else {
+  var mongoUri = process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/crawler';
+  mongoose.connect(mongoUri);
 }
 
 // production error handler
@@ -64,7 +67,6 @@ app.use(function(err, req, res, next) {
         error: {}
     });
 });
-
 
 /**
  * Set scheduler to crawl
