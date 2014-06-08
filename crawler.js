@@ -42,7 +42,6 @@ Crawler.prototype.fetch = function(url, callback) {
       rows.push(item);
     });
 
-    console.log(rows);
     return rows;
   }
   
@@ -63,8 +62,6 @@ Crawler.prototype.fetch = function(url, callback) {
       if (callback) {
         callback(parsedData);
       }
-      
-      console.log("done");
     } else {
       console.log("error");  
     }

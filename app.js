@@ -76,6 +76,8 @@ var CronJob = require('cron').CronJob;
 
 var emailSender = require('./emailSender');
 
+var async = require('async');
+
 // Register job to run
 function job() {
   var url = "http://sfbay.craigslist.org/search/apa?query=palo+alto&sale_date=-&maxAsk=1800";
@@ -86,32 +88,44 @@ function job() {
     // Send an email alert and store the new item into database
     var newPosts = [];
     var Post = mongoose.model('posts');
-    
-    data.forEach(function(d) {
+
+    async.each(data, function(d, callback) {
       Post.find({title: d.title}, function(err, p) {
         if (err) {
           console.log(err);
-        }else {
-          if (!p) {
+        } else {
+          if (!p.length) {
             newPosts.push(d);
           }
         }
-      });
-    });
 
-    newPosts.forEach(function(post) {
-      var item = new Post(post);
-      item.save(function(err) {
-        if (err) {
-          console.log(err);
-        }
+        // callback must be called to 
+        //indicate the iterator function is finished
+        callback();
       });
-    });
-
-    if (newPosts.length > 0) {
-      emailSender.send(newPosts);
-    }
+    }, function(err) {
+      // All queries are done
+      console.log('All queries finished');
+      handleNewPosts(newPosts, Post);
+    });    
   });
+}
+
+function handleNewPosts(newPosts, Post) {
+  newPosts.forEach(function(post) {
+    var item = new Post(post);
+    item.save(function(err) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log('saved!');
+      }
+    });
+  });
+
+  if (newPosts.length > 0) {
+    emailSender.send(newPosts);
+  }
 }
 
 function testingJob() {
@@ -121,6 +135,6 @@ function testingJob() {
 // job run every 5mins
 //new CronJob('* */5 * * * *', job, null, true, "America/Los_Angeles");
 
-//job.call();
+job.call();
 
 module.exports = app;
